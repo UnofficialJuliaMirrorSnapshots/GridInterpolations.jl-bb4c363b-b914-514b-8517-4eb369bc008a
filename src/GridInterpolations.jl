@@ -162,7 +162,7 @@ function interpolate(grid::AbstractGrid, data::DenseArray, x::AbstractVector)
 end
 
 function interpolants(grid::RectangleGrid, x::AbstractVector)
-    if any(isnan.(x))
+    if any(isnan, x)
         throw(DomainError("Input contains NaN!"))
     end
     cut_counts = grid.cut_counts
@@ -368,5 +368,12 @@ function sortperm!(x::Vector{I}, v::AbstractVector; alg::Algorithm=DEFAULT_UNSTA
                    lt::Function=isless, by::Function=identity, rev::Bool=false, order::Ordering=Forward) where {I<:Integer}
     sort!(x, alg, Perm(ord(lt,by,rev,order),v))
 end
+
+function Base.iterate(iter::RectangleGrid, state::Int64=1)
+    return state<=length(iter) ? (ind2x(iter, state), state+1) : nothing
+end
+
+Base.getindex(grid::RectangleGrid, key::CartesianIndex) = ind2x(grid, LinearIndices(Dims((grid.cut_counts...,)))[key])
+Base.getindex(grid::RectangleGrid, indices...) = ind2x(grid, LinearIndices(Dims((grid.cut_counts...,)))[indices...])
 
 end # module
